@@ -10,7 +10,7 @@ import direct
 # Ganti dengan token API bot Anda
 API_ID = "2345226"
 API_HASH = "6cc6449dcef22f608af2cf7efb76c99d"
-BOT_TOKEN = "5081813572:AAFmtT1LHdm_fCqkuiOYRtBKb7gHmIuBc7E"
+BOT_TOKEN = "5081813572:AAH4CJyx-Ub2Eh81pa94tRmuPnN4sMPusRc"
 
 app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
@@ -44,11 +44,14 @@ def get_video_metadata(file_path):
     with VideoFileClip(file_path) as clip:
         duration = int(clip.duration)
         width, height = clip.size
+        thumbnail_time = 5 * 60 + 21  # 5 menit 21 detik dalam detik
+        if thumbnail_time > duration:  # Jika durasi video lebih pendek dari 5:21
+            thumbnail_time = duration / 2  # Ambil tengah video sebagai thumbnail
         thumbnail_path = file_path + "_thumbnail.jpg"
-        clip.save_frame(thumbnail_path, t=1.0)
+        clip.save_frame(thumbnail_path, t=thumbnail_time)
         return duration, width, height, thumbnail_path
 
-@app.on_message(filters.command("dl") & filters.private)
+@app.on_message(filters.command("dl"))
 async def download_command(client, message):
     if len(message.command) < 2:
         await message.reply_text("Harap kirimkan perintah dengan format: /dl <link>")

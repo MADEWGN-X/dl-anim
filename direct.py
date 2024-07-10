@@ -23,6 +23,8 @@ def direct_link_generator(link):
 
     elif "krakenfiles.com" in domain:
         return krakenfiles(link)
+    elif "mediafire.com" in domain:
+        return mediafire(link)
 
 
 def krakenfiles(url):
@@ -52,3 +54,29 @@ def krakenfiles(url):
 
 # print(direct_link_generator('https://krakenfiles.com/view/tbWE0VDh8y/file.html'))
 
+def mediafire(url, session=None):
+    if "/folder/" in url:
+        return mediafireFolder(url)
+    if final_link := findall(
+        r"https?:\/\/download\d+\.mediafire\.com\/\S+\/\S+\/\S+", url
+    ):
+        return final_link[0]
+    if session is None:
+        session = Session()
+        parsed_url = urlparse(url)
+        url = f"{parsed_url.scheme}://{parsed_url.netloc}{parsed_url.path}"
+    try:
+        html = HTML(session.get(url).text)
+    except Exception as e:
+        session.close()
+        return f"ERROR: {e.__class__.__name__}"
+    if error := html.xpath('//p[@class="notranslate"]/text()'):
+        session.close()
+        return f"ERROR: {error[0]}"
+    if not (final_link := html.xpath("//a[@id='downloadButton']/@href")):
+        session.close()
+        return "ERROR: No links found in this page Try Again"
+    if final_link[0].startswith("//"):
+        return mediafire(f"https://{final_link[0][2:]}", session)
+    session.close()
+    return final_link[0]
