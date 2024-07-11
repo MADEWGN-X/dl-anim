@@ -24,7 +24,7 @@ RUN pip install -r requirements.txt
 
 # Copy the rest of the application code
 COPY . .
-
+EXPOSE 8000
 # Run the bot
 CMD ["echo done"]
 
